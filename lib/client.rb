@@ -1,6 +1,7 @@
 require_relative "parser"
 
 PROXY_SERVER_NAME = "Rubinius/1.0.0"
+PUBLIC_IP		  = `curl -s ifconfig.me`
 
 class Client
 	def initialize(client)
@@ -34,6 +35,15 @@ class Client
 	## Basic http proxy ##
 	def do_Http(stream, buffer, host, port)
 		begin
+			if host == PUBLIC_IP
+				  stream.print "HTTP/1.1 200\r\n" # 1
+				  stream.print "Content-Type: text/html\r\n" # 2
+				  stream.print "Server: #{PROXY_SERVER_NAME}\r\n"
+				  stream.print "\r\n" # 3
+				  stream.print "Hello world!" #4
+				  stream.close
+				  return
+			end
 			os = TCPSocket.new(host, port)	
 			os.print(buffer)
 			os_data = os.recvmsg()[0]
